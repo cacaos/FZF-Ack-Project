@@ -35,9 +35,10 @@ endif
 "Add the |+file_in_path| feature at compile time,maybe
 "ta hv yi vi xd uh jm so vi gf mu lu, uf vs
 function! s:findPif()
+    let b:ProjectRoot = ""
+    let lastcomma = ""
 	let dir = expand("%:p:h")
 	let thisDir = expand("%:p:h")
-	let dirLen = len(split(expand("%:p:h"),"\\")) + 1
 	for curDir in split(expand("%:p:h"),"\\")
 		for filename in g:Project_Identification_Files
 			let file = findfile(filename,thisDir, 1)
@@ -46,10 +47,10 @@ function! s:findPif()
 				break
 			endif
 		endfor
-		if exists("b:ProjectRoot")
+		if (b:ProjectRoot != "")
 			break
 		endif
-		if !exists("lastcomma")
+		if (lastcomma == "")
 			let thisDir = strpart(dir,0)
 			let lastcomma = strridx(dir, "\\")
 		else	
@@ -67,24 +68,11 @@ endfunction
 
 function! s:toggleFZF(bang, ...)
 	if a:bang 	
-		let cmd = 'FZF '
+		let b:cmd = 'FZF! '
 	else
-		let cmd = 'FZF! '
+		let b:cmd = 'FZF '
 	endif
-
-	let args = copy(a:000)
-	for argStr in args
-		let cmd .= argStr
-		let cmd .= " " 
-	endfor
-	call s:findPif()
-	if exists('b:ProjectRoot')
-		let cmd .= b:ProjectRoot
-	else
-		let cmd .= expand("%:p:h")
-	endif
-	echo cmd
-	execute cmd
+	call s:toggle(a:000)
 endfunction
 
 
@@ -93,22 +81,41 @@ endfunction
 "
 "Args:
 "ke ui ys ! bc ui,ke ys yr cj uu mo ui , lu jy xr xd iu wl 
-function! s:toggleAck(...)
-	let cmd = 'Ack '
-	let args = copy(a:000)
-	for argStr in args
-		let cmd .= argStr
-		let cmd .= " " 
-	endfor
-	call s:findPif()
-	if exists('b:ProjectRoot')
-		let cmd .= b:ProjectRoot
+function! s:toggleAck(bang, ...)
+	if a:bang 	
+        let b:cmd = 'Ack '
 	else
-		let cmd .= expand("%:p:h")
+        let b:cmd = 'Ack! '
 	endif
-	echo cmd
-	execute cmd
+	call s:toggle(a:000)
 endfunction
 
+function! s:toggle(args)
+    if !exists('b:cmd')
+        echo 'not found cmd'
+    else
+        let args = copy(a:args)
+        for argStr in args
+            let b:cmd .= argStr
+            let b:cmd .= " " 
+        endfor
+        call s:findPif()
+        if (b:ProjectRoot != "")
+            let b:cmd .= b:ProjectRoot
+        else
+            let b:cmd .= expand("%:p:h")
+        endif
+        let msg = "execute: "
+        let msg .= b:cmd
+        let choice = confirm(msg, "&Yes \n&No ")
+        if choice == 1
+            execute b:cmd
+        else
+            echo "execute quit"
+        endif
+    endif
+endfunction
+
+
 command! -nargs=* -complete=dir  -bang RFZF :call s:toggleFZF(<bang>0, <f-args>)
-command! -bang -nargs=* -complete=file RAck :call s:toggleAck(<q-args>)
+command! -bang -nargs=* -complete=file RAck :call s:toggleAck(<bang>0, <q-args>)
