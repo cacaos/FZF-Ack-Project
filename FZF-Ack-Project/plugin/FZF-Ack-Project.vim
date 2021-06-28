@@ -95,6 +95,12 @@ function! s:toggle(args)
         echo 'not found cmd'
     else
         let args = copy(a:args)
+        if(len(args) == 1)
+            if stridx(b:cmd,"FZF") != -1
+                let b:cmd .= "-q " 
+            endif
+        endif
+
         for argStr in args
             let b:cmd .= argStr
             let b:cmd .= " " 
