@@ -18,7 +18,7 @@
   #FZF
   :FZF -q filename projectDir
   #RFZF
-  :RFZF  -q filename
+  :RFZF filename
 ```
 - Ack
 
@@ -27,7 +27,7 @@
   #Ack
   :Ack str projectDir
   #RAck
-  :RAck  str 
+  :RAck str 
 ```
 ### 自定义
 ```vim
