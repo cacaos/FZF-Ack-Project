@@ -34,7 +34,7 @@ endif
 "xd uh jm so wf jm vi gf mu lu
 "Add the |+file_in_path| feature at compile time,maybe
 "ta hv yi vi xd uh jm so vi gf mu lu, uf vs
-function! s:findPif()
+function! s:findPif2()
     let b:ProjectRoot = ""
     let lastcomma = ""
 	let dir = expand("%:p:h")
@@ -56,6 +56,17 @@ function! s:findPif()
 		else	
 			let thisDir = strpart(dir,0,lastcomma)
 			let lastcomma = strridx(dir, "\\", lastcomma - 1)
+		endif
+	endfor
+endfunction
+
+function! s:findPif()
+    let b:ProjectRoot = ""
+	for filename in g:NTPNames
+		let file = findfile(filename, expand("%:p:h") . ';')
+		if filereadable(file)
+			let b:ProjectRoot = fnamemodify(file, ':p:h')
+			break
 		endif
 	endfor
 endfunction
@@ -105,7 +116,6 @@ function! s:toggle(args)
             let b:cmd .= argStr
             let b:cmd .= " " 
         endfor
-        call s:findPif()
         if (b:ProjectRoot != "")
             let b:cmd .= b:ProjectRoot
         else
@@ -125,3 +135,5 @@ endfunction
 
 command! -nargs=* -complete=dir  -bang RFZF :call s:toggleFZF(<bang>0, <f-args>)
 command! -bang -nargs=* -complete=file RAck :call s:toggleAck(<bang>0, <q-args>)
+
+autocmd BufNewFile,BufRead * call s:findPif()
